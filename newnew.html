@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>막걸리 스마트 브루어리</title>
+    <style>
+        body { 
+            font-family: 'Pretendard', sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            background-color: #fcfbf9; /* 부드러운 크림색 배경 */
+            color: #333;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container { 
+            width: 100%; 
+            max-width: 600px; /* 모바일/태블릿에 딱 맞는 너비 */
+        }
+
+        .header {
+            margin-bottom: 30px;
+        }
+        .header h1 { font-size: 24px; margin: 0 0 5px 0; }
+        .header p { color: #888; font-size: 14px; margin: 0; }
+
+        .card { 
+            background: white; 
+            border: 1px solid #eaeaea; 
+            border-radius: 12px; 
+            padding: 20px; 
+            margin-bottom: 20px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        }
+        .card h2 { font-size: 16px; margin: 0 0 20px 0; display: flex; align-items: center; gap: 8px;}
+
+        /* 2x2 모니터링 그리드 */
+        .monitor-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .data-box { display: flex; align-items: center; gap: 12px; }
+        .icon { font-size: 24px; background: #f0f4f8; padding: 10px; border-radius: 50%; }
+        .data-info .label { font-size: 12px; color: #888; display: block; margin-bottom: 4px;}
+        .data-info .value { font-size: 18px; font-weight: bold; }
+
+        /* 제어 설정 입력칸 */
+        .input-row { display: flex; gap: 15px; margin-bottom: 20px; }
+        .input-group { flex: 1; }
+        .input-group label { font-size: 12px; color: #666; display: block; margin-bottom: 8px; }
+        .input-group input, .input-group select { 
+            width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; background: #fdfdfd;
+        }
+
+        /* 버튼 스타일 */
+        .btn-group { display: flex; gap: 10px; }
+        .btn-primary { 
+            flex: 2; background: #0b1120; color: white; border: none; padding: 14px; border-radius: 8px; font-weight: bold; cursor: pointer;
+        }
+        .btn-secondary {
+            flex: 1; background: white; color: #333; border: 1px solid #ddd; padding: 14px; border-radius: 8px; font-weight: bold; cursor: pointer;
+        }
+
+        /* 레시피 리스트 */
+        .recipe-item { border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 15px; }
+        .recipe-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .recipe-title { font-weight: bold; margin-bottom: 5px; display: flex; justify-content: space-between; }
+        .recipe-author { font-size: 12px; color: #888; margin-bottom: 10px; }
+        .recipe-desc { font-size: 13px; color: #555; line-height: 1.5; margin-bottom: 10px;}
+        .apply-btn { background: #0b1120; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🍶 막걸리 스마트 브루어리</h1>
+            <p>실시간 발효 모니터링 및 제어 시스템</p>
+        </div>
+
+        <div class="card">
+            <h2>📊 실시간 발효 모니터</h2>
+            <div class="monitor-grid">
+                <div class="data-box">
+                    <div class="icon" style="color: #ff9800; background: #fff3e0;">🌡️</div>
+                    <div class="data-info">
+                        <span class="label">현재 온도</span>
+                        <span id="curr_temp" class="value">--</span><span class="value">°C</span>
+                    </div>
+                </div>
+                <div class="data-box">
+                    <div class="icon" style="color: #2196f3; background: #e3f2fd;">💧</div>
+                    <div class="data-info">
+                        <span class="label">알코올 도수 (ABV)</span>
+                        <span id="curr_abv" class="value">--</span><span class="value">%</span>
+                    </div>
+                </div>
+                <div class="data-box">
+                    <div class="icon" style="color: #9c27b0; background: #f3e5f5;">⏱️</div>
+                    <div class="data-info">
+                        <span class="label">경과 시간</span>
+                        <span id="uptime" class="value">--:--:--</span>
+                    </div>
+                </div>
+                <div class="data-box">
+                    <div class="icon" style="color: #4caf50; background: #e8f5e9;">🔄</div>
+                    <div class="data-info">
+                        <span class="label">마지막 교반</span>
+                        <span id="last_stir" class="value">--</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>⚙️ 제어 설정</h2>
+            <div class="input-row">
+                <div class="input-group">
+                    <label>희망 온도 (°C)</label>
+                    <input type="number" id="target_temp_input" value="25">
+                </div>
+                <div class="input-group">
+                    <label>하루 교반 횟수</label>
+                    <select id="stir_count_select">
+                        <option value="1">1회</option>
+                        <option value="2">2회</option>
+                        <option value="3" selected>3회</option>
+                        <option value="4">4회</option>
+                    </select>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn-primary" onclick="updateSettings()">설정 적용하기</button>
+                <button class="btn-secondary">▷ 즉시 교반하기</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 style="display: flex; justify-content: space-between; align-items: center;">
+                📖 레시피 커뮤니티
+                <button class="apply-btn">+ 내 레시피 공유</button>
+            </h2>
+            <p style="font-size: 12px; color: #888; margin-top: -15px; margin-bottom: 20px;">다른 양조가들과 레시피를 공유하고 배워보세요</p>
+            
+            <div class="recipe-item">
+                <div class="recipe-title">
+                    <span>지민표 진한 찹쌀 막걸리</span>
+                    <button class="apply-btn">적용하기</button>
+                </div>
+                <div class="recipe-author">👤 김지민</div>
+                <div class="recipe-desc">고두밥을 충분히 식히는 게 포인트입니다. 찹쌀과 멥쌀을 7:3 비율로 섞어 사용하면 더욱 부드러운 맛이 납니다.</div>
+                <div style="font-size: 11px; color: #888;">🌡️ 25°C &nbsp; 🔄 하루 2회 교반</div>
+            </div>
+        </div>
+    </div>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+
+    <script>
+        // 🚨 여기에 지민 님의 진짜 firebaseConfig 값을 붙여넣으세요! 🚨
+        const firebaseConfig = {
+            apiKey: "본인의_API_KEY",
+            authDomain: "smart11-f49d9.firebaseapp.com",
+            databaseURL: "https://smart11-f49d9-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "smart11-f49d9",
+            storageBucket: "smart11-f49d9.appspot.com",
+            messagingSenderId: "본인의_SENDER_ID",
+            appId: "본인의_APP_ID"
+        };
+
+        // Firebase 초기화
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // 실시간 데이터 감시
+        const monitoringRef = db.ref('brewery_device_01/monitoring');
+        monitoringRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            if(data) {
+                document.getElementById('curr_temp').innerText = data.temperature || '--';
+                document.getElementById('curr_abv').innerText = data.abv || '--';
+                document.getElementById('uptime').innerText = data.elapsed_time || '--';
+            }
+        });
+
+        // 설정값 저장 함수
+        function updateSettings() {
+            const targetTemp = document.getElementById('target_temp_input').value;
+            const stirCount = document.getElementById('stir_count_select').value;
+
+            db.ref('brewery_device_01/control').set({
+                target_temperature: Number(targetTemp),
+                stir_frequency: Number(stirCount)
+            }).then(() => {
+                alert("설정이 서버로 전송되었습니다! 🚀");
+            }).catch((error) => {
+                console.error("저장 실패:", error);
+                alert("저장에 실패했습니다.");
+            });
+        }
+    </script>
+    </body>
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>막걸리 스마트 브루어리</title>
+    <script type="text/javascript" nonce="a865a6e3f3794241b4b2bf980d0" src="//local.adguard.org?ts=1776340716895&amp;type=content-script&amp;dmn=cdn.discordapp.com&amp;url=https%3A%2F%2Fcdn.discordapp.com%2Fattachments%2F1465865410946535510%2F1494306420701532243%2Fe050fe439252a4d0.html%3Fex%3D69e220cd%26is%3D69e0cf4d%26hm%3Dd6f10aefe8db8441b39a88190c00ea3a249881efb468e4c4589d6da4bf0979fc%26&amp;app=msedge.exe&amp;css=3&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1&amp;stealth=1&amp;st-loc&amp;st-dnt"></script><script type="text/javascript" nonce="a865a6e3f3794241b4b2bf980d0" src="//local.adguard.org?ts=1776340716895&amp;name=AdGuard%20Extra&amp;name=AdGuard%20Popup%20Blocker&amp;type=user-script"></script><link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🍶 스마트 발효 모니터</h1>
+
+        <section class="status-card">
+            <div class="data-item">
+                <span class="label">현재 온도</span>
+                <span id="curr_temp" class="value">--</span> °C
+            </div>
+            <div class="data-item">
+                <span class="label">알코올 도수 (ABV)</span>
+                <span id="curr_abv" class="value">--</span> %
+            </div>
+            <div class="data-item">
+                <span class="label">경과 시간</span>
+                <span id="uptime" class="value">--</span>
+            </div>
+        </section>
+
+        <section class="control-panel">
+            <h2>⚙️ 제어 설정</h2>
+            <div class="input-group">
+                <label>희망 온도 (°C)</label>
+                <input type="number" id="target_temp_input" value="25">
+            </div>
+            <div class="input-group">
+                <label>하루 교반 횟수</label>
+                <select id="stir_count_select">
+                    <option value="1">1회</option>
+                    <option value="2">2회</option>
+                    <option value="3" selected>3회</option>
+                    <option value="4">4회</option>
+                </select>
+            </div>
+            <button onclick="updateSettings()" class="save-btn">설정 적용하기</button>
+        </section>
+
+        <section class="recipe-share">
+            <h2>📝 레시피 커뮤니티</h2>
+            <div id="recipe_list">
+            </div>
+            <button class="share-btn">내 레시피 공유하기</button>
+        </section>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

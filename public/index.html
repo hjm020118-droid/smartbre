@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>막걸리 스마트 브루어리</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { 
+            font-family: 'Pretendard', sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            background-color: #fcfbf9; /* 부드러운 크림색 배경 */
+            color: #333;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container { 
+            width: 100%; 
+            max-width: 600px; /* 모바일/태블릿에 딱 맞는 너비 */
+        }
+
+        .header {
+            margin-bottom: 30px;
+        }
+        .header h1 { font-size: 24px; margin: 0 0 5px 0; }
+        .header p { color: #888; font-size: 14px; margin: 0; }
+
+        .card { 
+            background: white; 
+            border: 1px solid #eaeaea; 
+            border-radius: 12px; 
+            padding: 20px; 
+            margin-bottom: 20px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        }
+        .card h2 { font-size: 16px; margin: 0 0 20px 0; display: flex; align-items: center; gap: 8px;}
+
+        /* 2x2 모니터링 그리드 */
+        .monitor-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .data-box { display: flex; align-items: center; gap: 12px; }
+        .icon { font-size: 24px; background: #f0f4f8; padding: 10px; border-radius: 50%; }
+        .data-info .label { font-size: 12px; color: #888; display: block; margin-bottom: 4px;}
+        .data-info .value { font-size: 18px; font-weight: bold; }
+
+        /* 제어 설정 입력칸 */
+        .input-row { display: flex; gap: 15px; margin-bottom: 20px; }
+        .input-row .input-group { flex: 1; }
+        .input-group label { font-size: 12px; color: #666; display: block; margin-bottom: 8px; }
+        .input-group input, .input-group select { 
+            width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; background: #fdfdfd;
+            font-size: 14px;
+        }
+
+        /* 버튼 스타일 */
+        .btn-group { display: flex; gap: 10px; }
+        .btn-primary { 
+            flex: 2; background: #0b1120; color: white; border: none; padding: 14px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: background 0.2s;
+        }
+        .btn-primary:hover { background: #1e293b; }
+        .btn-secondary {
+            flex: 1; background: white; color: #333; border: 1px solid #ddd; padding: 14px; border-radius: 8px; font-weight: bold; cursor: pointer;
+        }
+
+        /* 스마트 발효 모드 그리드 */
+        .mode-grid {
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); 
+            gap: 12px;
+        }
+        .mode-card {
+            background: #ffffff; 
+            border: 2px solid #e0e0e0; 
+            border-radius: 16px; 
+            padding: 16px; 
+            text-align: center; 
+            cursor: pointer; 
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .mode-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.06);
+        }
+        .mode-card.active {
+            background: #f1f5f9 !important;
+            border-color: #0b1120 !important;
+            box-shadow: 0 4px 12px rgba(11, 17, 32, 0.08) !important;
+            transform: scale(1.02);
+        }
+
+        /* 👑 [매직 서식] 좌우 터치/마우스 드래그 가로 스크롤을 활성화하는 컨테이너 패키지 */
+        .chart-scroll-wrapper {
+            width: 100%;
+            overflow-x: auto; /* 가로 방향 넘치면 스크롤 바 자동 생성 */
+            white-space: nowrap;
+            margin-top: 10px;
+            border-radius: 8px;
+            background: #fafafa;
+            border: 1px solid #f0f0f0;
+        }
+        
+        /* 캔버스가 담길 진짜 박스: 데이터가 늘어나면 스크립트가 이 박스의 width를 오른쪽으로 쭈우욱 늘려줍니다 */
+        .chart-area-box {
+            position: relative;
+            height: 220px;
+            min-width: 100%; /* 기본 너비는 100% 충족 */
+        }
+
+        /* 스크롤바 디자인 세련되게 숨기거나 다듬기 */
+        .chart-scroll-wrapper::-webkit-scrollbar {
+            height: 6px;
+        }
+        .chart-scroll-wrapper::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .chart-scroll-wrapper::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        /* 실시간 안내 토스트 팝업 창 스타일 */
+        .toast-popup {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translate(-50%, 20px);
+            background: rgba(11, 17, 32, 0.9);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .toast-popup.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, 0);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🍶 막걸리 스마트 브루어리</h1>
+            <p>실시간 발효 모니터링 및 제어 시스템</p>
+        </div>
+
+        <div class="card">
+            <h2>📊 실시간 발효 모니터</h2>
+            <div class="monitor-grid">
+                <div class="data-box">
+                    <div class="icon" style="color: #ff9800; background: #fff3e0;">🌡️</div>
+                    <div class="data-info">
+                        <span class="label">현재 온도</span>
+                        <span id="curr_temp" class="value">--</span><span class="value">°C</span>
+                    </div>
+                </div>
+                <div class="data-box">
+                    <div class="icon" style="color: #2196f3; background: #e3f2fd;">💧</div>
+                    <div class="data-info">
+                        <span class="label">알코올 도수 (ABV)</span>
+                        <span id="curr_abv" class="value">--</span><span class="value">%</span>
+                    </div>
+                </div>
+                <div class="data-box">
+                    <div class="icon" style="color: #9c27b0; background: #f3e5f5;">⏱️</div>
+                    <div class="data-info">
+                        <span class="label">경과 시간</span>
+                        <span id="uptime" class="value">--:--:--</span>
+                    </div>
+                </div>
+                <div class="data-box">
+                    <div class="icon" style="color: #4caf50; background: #e8f5e9;">🔄</div>
+                    <div class="data-info">
+                        <span class="label">마지막 교반</span>
+                        <span id="last_stir" class="value">--</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🎯 스마트 발효 모드 선택</h2>
+            <div class="mode-grid">
+                <div class="mode-card" id="mode-standard" onclick="selectBrewingMode('standard', '표준 상온', 25, 3)">
+                    <div style="font-size: 1.8rem; margin-bottom: 8px;">🌾</div>
+                    <div style="font-size: 0.95rem; font-weight: bold; color: #222; margin-bottom: 4px;">표준 상온</div>
+                    <div style="font-size: 0.75rem; color: #777;">25°C | 일반 발효</div>
+                </div>
+
+                <div class="mode-card" id="mode-dynamic" onclick="selectBrewingMode('dynamic', '다이내믹 변온', 22, 4)">
+                    <div style="font-size: 1.8rem; margin-bottom: 8px;">⚡</div>
+                    <div style="font-size: 0.95rem; font-weight: bold; color: #222; margin-bottom: 4px;">다이내믹 변온</div>
+                    <div style="font-size: 0.75rem; color: #777;">22°C | 가변 제어</div>
+                </div>
+
+                <div class="mode-card" id="mode-premium" onclick="selectBrewingMode('premium', '프리미엄 저온', 15, 2)">
+                    <div style="font-size: 1.8rem; margin-bottom: 8px;">❄️</div>
+                    <div style="font-size: 0.95rem; font-weight: bold; color: #222; margin-bottom: 4px;">프리미엄 저온</div>
+                    <div style="font-size: 0.75rem; color: #777;">15°C | 고급 청주형</div>
+                </div>
+
+                <div class="mode-card" id="mode-carbon" onclick="selectBrewingMode('carbon', '고속 탄산', 28, 5)">
+                    <div style="font-size: 1.8rem; margin-bottom: 8px;">🫧</div>
+                    <div style="font-size: 0.95rem; font-weight: bold; color: #222; margin-bottom: 4px;">고속 탄산</div>
+                    <div style="font-size: 0.75rem; color: #777;">28°C | 스파클링</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📈 실시간 온도 변화 추이 (30분 주기)</h2>
+            <p style="font-size:11px; color:#999; margin:-10px 0 10px 0;">💡 데이터가 많아지면 좌우로 밀어서(스크롤) 과거 내역을 볼 수 있습니다.</p>
+            
+            <div class="chart-scroll-wrapper" id="chartWrapper">
+                <div class="chart-area-box" id="chartArea">
+                    <canvas id="tempTrendChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>⚙️ 제어 세부 설정</h2>
+            <div class="input-row">
+                <div class="input-group">
+                    <label>희망 온도 (°C)</label>
+                    <input type="number" id="target_temp_input" value="25">
+                </div>
+                <div class="input-group">
+                    <label>하루 교반 횟수</label>
+                    <select id="stir_count_select">
+                        <option value="1">1회</option>
+                        <option value="2">2회</option>
+                        <option value="3" selected>3회</option>
+                        <option value="4">4회</option>
+                        <option value="5">5회</option>
+                    </select>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn-primary" onclick="updateSettings()">설정 적용하기</button>
+                <button class="btn-secondary">▷ 즉시 교반하기</button>
+            </div>
+        </div>
+        
+    </div>
+
+    <div id="toast" class="toast-popup">
+        <span id="toast-icon">✨</span>
+        <span id="toast-text">모드가 변경되었습니다.</span>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+
+    <script>
+        let selectedMode = 'custom'; 
+        let tempChart; 
+
+        // 🚨여기에 지민 님의 진짜 firebaseConfig 값을 복사 붙여넣기 하세요!🚨
+        const firebaseConfig = {
+            apiKey: "본인의_API_KEY",
+            authDomain: "smart11-f49d9.firebaseapp.com",
+            databaseURL: "https://smart11-f49d9-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "smart11-f49d9",
+            storageBucket: "smart11-f49d9.appspot.com",
+            messagingSenderId: "본인의_SENDER_ID",
+            appId: "본인의_APP_ID"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // -----------------------------------------------------------------
+        // 📊 [스크롤 연동형] Chart.js 그래프 엔진 초기화 및 24시간 더미 플로팅
+        // -----------------------------------------------------------------
+        // -----------------------------------------------------------------
+        // 📊 [변경 위치 1] Chart.js 그래프 엔진 초기화 (최대 24시간 고정 창 서식)
+        // -----------------------------------------------------------------
+        function initTemperatureChart() {
+            const ctx = document.getElementById('tempTrendChart').getContext('2d');
+            
+            // 처음 켰을 때는 빈 배열로 시작합니다.
+            const sampleLabels = [];
+            const sampleData = [];
+
+            tempChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: sampleLabels,
+                    datasets: [{
+                        label: '온도 (°C)',
+                        data: sampleData,
+                        borderColor: '#0b1120', 
+                        backgroundColor: 'rgba(98, 0, 238, 0.04)', 
+                        borderWidth: 3,
+                        pointBackgroundColor: '#6200EE', 
+                        pointRadius: 3,
+                        pointHoverRadius: 6,
+                        tension: 0.3, 
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            min: 10,
+                            max: 35,
+                            grid: { color: '#f1f5f9' },
+                            ticks: { font: { size: 10 } }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { font: { size: 10 }, color: '#777' }
+                        }
+                    }
+                }
+            });
+
+            // 스크롤 영역 가로 크기를 현재 화면의 'Custom 폭'에 맞추어 딱 24시간 분량 크기로 고정합니다.
+            // 48개 플롯 * 45px = 약 2160px 너비로 도화지 크기 고정
+            document.getElementById('chartArea').style.width = '2160px';
+            tempChart.resize();
+        }
+        function updateChartCanvasWidth() {
+            const dataCount = tempChart.data.labels.length;
+            const chartArea = document.getElementById('chartArea');
+            const wrapper = document.getElementById('chartWrapper');
+
+            // 점 1개당 가로 폭 간격을 45픽셀로 고정 매칭합니다.
+            const calculatedWidth = dataCount * 45;
+            
+            // 만약 전체 너비가 대시보드 기본폭(약 550px)보다 크다면, 가로 길이를 팍팍 확장시킵니다!
+            if (calculatedWidth > wrapper.clientWidth) {
+                chartArea.style.width = `${calculatedWidth}px`;
+            } else {
+                chartArea.style.width = '100%';
+            }
+            
+            // 차트 크기 재조정 후 자동으로 스크롤을 가장 오른쪽(최신 데이터 위치)으로 밀어내기
+            tempChart.resize();
+            setTimeout(() => {
+                wrapper.scrollLeft = wrapper.scrollWidth;
+            }, 100);
+        }
+
+        // 구동 시작
+        initTemperatureChart();
+
+        // -----------------------------------------------------------------
+        // 1. 라즈베리파이가 쏘아 올리는 계측값 실시간 수신 구역
+        // -----------------------------------------------------------------
+        let lastLoggedMinute = -1; 
+
+        const monitoringRef = db.ref('brewery_device_01/monitoring');
+        monitoringRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            if(data) {
+                const currentTemp = data.temperature !== undefined ? data.temperature : '--';
+                document.getElementById('curr_temp').innerText = currentTemp;
+                document.getElementById('curr_abv').innerText = data.abv !== undefined ? data.abv : '--';
+                document.getElementById('uptime').innerText = data.elapsed_time || '--:--:--';
+
+                // [30분 주기 파이어베이스 리얼타임 데이터 캐칭 레이더]
+                if (data.elapsed_time && currentTemp !== '--') {
+                    const timeParts = data.elapsed_time.split(':');
+                    if (timeParts.length === 3) {
+                        const hours = timeParts[0];
+                        const minutes = parseInt(timeParts[1], 10);
+
+                        // 분 단위가 정확히 00분 또는 30분인 타이밍을 낚아챕니다.
+                        if ((minutes === 0 || minutes === 30) && minutes !== lastLoggedMinute) {
+                            lastLoggedMinute = minutes; // 중복 추가 방지
+
+                            const labelTime = `${hours}:${minutes === 0 ? '00' : '30'}`;
+                            
+                            // 1. 차트 끝에 최신 데이터 밀어 넣기
+                            tempChart.data.labels.push(labelTime);
+                            tempChart.data.datasets[0].data.push(Number(currentTemp));
+
+                            // 🚨 [핵심 변경] 데이터가 24시간 분량(30분 단위이므로 48개 윈도우)을 넘어가면
+                            // 맨 왼쪽(가장 오래된 데이터)을 1개씩 지워버려서 최대 24시간 폭을 항상 유지합니다.
+                            if (tempChart.data.labels.length > 48) {
+                                tempChart.data.labels.shift();       // 가장 오래된 시간축 축 제거
+                                tempChart.data.datasets[0].data.shift(); // 가장 오래된 온도 데이터 제거
+                            }
+                            
+                            tempChart.update(); // 그래프 최신 갱신
+
+                            // 항상 가장 최근 데이터가 있는 맨 오른쪽으로 화면 스크롤 자동 정렬
+                            const wrapper = document.getElementById('chartWrapper');
+                            wrapper.scrollLeft = wrapper.scrollWidth;
+
+                            console.log(`📈 [슬라이딩 24h 윈도우] 시간: ${labelTime} | 온도: ${currentTemp}°C`);
+                        }
+                    }
+                }
+            }
+        });
+
+        /**
+         * 2. 🎯 유저가 특정 발효 모드 카드를 탭했을 때 작동하는 연동 함수
+         */
+        function selectBrewingMode(modeId, modeTitle, temp, stir) {
+            selectedMode = modeId;
+            
+            const cards = document.querySelectorAll('.mode-card');
+            cards.forEach(card => card.classList.remove('active'));
+
+            const targetCard = document.getElementById(`mode-${modeId}`);
+            if(targetCard) {
+                targetCard.classList.add('active');
+            }
+
+            document.getElementById('target_temp_input').value = temp;
+            document.getElementById('stir_count_select').value = stir;
+
+            let emoji = '🌾';
+            if(modeId === 'dynamic') emoji = '⚡';
+            else if(modeId === 'premium') emoji = '❄️';
+            else if(modeId === 'carbon') emoji = '🫧';
+
+            showToastPopup(emoji, `[${modeTitle} 모드] 수치가 입력되었습니다.`);
+        }
+
+        /**
+         * 3. 팝업 알림창 호출 함수 로직
+         */
+        function showToastPopup(emoji, message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-icon').innerText = emoji;
+            document.getElementById('toast-text').innerText = message;
+
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2300);
+        }
+
+        /**
+         * 4. 🚀 [설정 적용하기] 버튼 누르면 파이어베이스 제어 노드에 최종 업로드하는 함수
+         */
+        function updateSettings() {
+            const targetTemp = document.getElementById('target_temp_input').value;
+            const stirCount = document.getElementById('stir_count_select').value;
+
+            db.ref('brewery_device_01/control').set({
+                target_temperature: Number(targetTemp),
+                stir_frequency: Number(stirCount),
+                current_mode: selectedMode  
+            }).then(() => {
+                showToastPopup('🚀', '양조장 서버로 설정값이 무사히 전송되었습니다!');
+            }).catch((error) => {
+                console.error("전송 에러 발생:", error);
+                alert("네트워크 장애로 전송에 실패했습니다.");
+            });
+        }
+    </script>
+</body>
+</html>

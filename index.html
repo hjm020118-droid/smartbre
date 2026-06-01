@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>막걸리 스마트 브루어리</title>
+    <link rel="stylesheet" href="style.css"> </head>
+<body>
+    <div class="container">
+        <h1>🍶 스마트 발효 모니터</h1>
+
+        <section class="status-card">
+            <div class="data-item">
+                <span class="label">현재 온도</span>
+                <span id="curr_temp" class="value">--</span> °C
+            </div>
+            <div class="data-item">
+                <span class="label">알코올 도수 (ABV)</span>
+                <span id="curr_abv" class="value">--</span> %
+            </div>
+            <div class="data-item">
+                <span class="label">경과 시간</span>
+                <span id="uptime" class="value">--</span>
+            </div>
+        </section>
+
+        <section class="control-panel">
+            <h2>⚙️ 제어 설정</h2>
+            <div class="input-group">
+                <label>희망 온도 (°C)</label>
+                <input type="number" id="target_temp_input" value="25">
+            </div>
+            <div class="input-group">
+                <label>하루 교반 횟수</label>
+                <select id="stir_count_select">
+                    <option value="1">1회</option>
+                    <option value="2">2회</option>
+                    <option value="3" selected>3회</option>
+                    <option value="4">4회</option>
+                </select>
+            </div>
+            <button onclick="updateSettings()" class="save-btn">설정 적용하기</button>
+        </section>
+
+        <section class="recipe-share">
+            <h2>📖 레시피 커뮤니티</h2>
+            <div id="recipe_list">
+                </div>
+            <button class="share-btn">내 레시피 공유하기</button>
+        </section>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
