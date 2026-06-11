@@ -150,147 +150,110 @@
             visibility: visible;
             transform: translate(-50%, 0);
         }
-
-        /* 🆕 기기 미연동 상태용 초기 로그인 화면 스타일 */
-        .login-container {
-            display: none;
-            text-align: center;
-            padding: 40px 20px;
-            margin-top: 50px;
-        }
-        .login-logo {
-            font-size: 64px;
-            margin-bottom: 20px;
-        }
-        .login-container h2 {
-            font-size: 22px;
-            margin-bottom: 10px;
-            font-weight: bold;
-        }
-        .login-container p {
-            color: #666;
-            font-size: 14px;
-            line-height: 1.6;
-            margin-bottom: 30px;
-        }
-        /* 앱뷰 레이아웃 전체 숨김 처리용 클래스 */
-        .app-layout {
-            display: none;
-        }
     </style>
 </head>
 <body>
     <div class="container">
-        
-        <div id="loginPage" class="login-container">
-            <div class="login-logo">🍶</div>
-            <h2>막걸리 브루어리 IoT 시스템</h2>
-            <p>실시간 기기 동기화를 위해<br>제품 측면에 부착된 <b>고유 QR 코드</b>를 스캔해 주세요.</p>
-            <p style="font-size: 12px; color: #aaa;">※ 전용 어플리케이션의 스캔 버튼을 통해 연동이 가능합니다.</p>
+        <div class="header">
+            <h1>🍶 막걸리 스마트 브루어리</h1>
+            <p>실시간 발효 모니터링 및 제어 시스템</p>
         </div>
 
-        <div id="appLayout" class="app-layout">
-            <div class="header">
-                <h1>🍶 막걸리 스마트 브루어리 (<span id="deviceHeaderId" style="color: #6200EE;">--</span>)</h1>
-                <p>실시간 발효 모니터링 및 제어 시스템</p>
-            </div>
-
-            <div class="card">
-                <h2>📊 실시간 발효 모니터</h2>
-                <div class="monitor-grid">
-                    <div class="data-box">
-                        <div class="icon" style="color: #ff9800; background: #fff3e0;">🌡️</div>
-                        <div class="data-info">
-                            <span class="label">현재 온도</span>
-                            <span id="curr_temp" class="value">--</span><span class="value">°C</span>
-                        </div>
+        <div class="card">
+            <h2>📊 실시간 발효 모니터</h2>
+            <div class="monitor-grid">
+                <div class="data-box">
+                    <div class="icon" style="color: #ff9800; background: #fff3e0;">🌡️</div>
+                    <div class="data-info">
+                        <span class="label">현재 온도</span>
+                        <span id="curr_temp" class="value">--</span><span class="value">°C</span>
                     </div>
-                    <div class="data-box">
-                        <div class="icon" style="color: #2196f3; background: #e3f2fd;">💧</div>
-                        <div class="data-info">
-                            <span class="label">알코올 도수 (ABV)</span>
-                            <span id="curr_abv" class="value">--</span><span class="value">%</span>
-                        </div>
+                </div>
+                <div class="data-box">
+                    <div class="icon" style="color: #2196f3; background: #e3f2fd;">💧</div>
+                    <div class="data-info">
+                        <span class="label">알코올 도수 (ABV)</span>
+                        <span id="curr_abv" class="value">--</span><span class="value">%</span>
                     </div>
-                    <div class="data-box">
-                        <div class="icon" style="color: #9c27b0; background: #f3e5f5;">⏱️</div>
-                        <div class="data-info">
-                            <span class="label">경과 시간</span>
-                            <span id="uptime" class="value">--:--:--</span>
-                        </div>
+                </div>
+                <div class="data-box">
+                    <div class="icon" style="color: #9c27b0; background: #f3e5f5;">⏱️</div>
+                    <div class="data-info">
+                        <span class="label">경과 시간</span>
+                        <span id="uptime" class="value">--:--:--</span>
                     </div>
-                    <div class="data-box">
-                        <div class="icon" style="color: #4caf50; background: #e8f5e9;">🔄</div>
-                        <div class="data-info">
-                            <span class="label">마지막 교반</span>
-                            <span id="last_stir" class="value">--</span>
-                        </div>
+                </div>
+                <div class="data-box">
+                    <div class="icon" style="color: #4caf50; background: #e8f5e9;">🔄</div>
+                    <div class="data-info">
+                        <span class="label">마지막 교반</span>
+                        <span id="last_stir" class="value">--</span>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div class="card">
-                <h2>🎯 스마트 발효 모드 선택</h2>
-                <div class="mode-grid">
-                    <div class="mode-card" id="mode-standard" onclick="selectBrewingMode('standard', '표준 상온', 25, 3)">
-                        <div style="font-size: 1.8rem; margin-bottom: 8px;">🌾</div>
-                        <div style="font-size: 0.95rem; font-weight: bold; color: #222; margin-bottom: 4px;">표준 상온</div>
-                        <div style="font-size: 0.75rem; color: #777;">25°C | 일반 발효</div>
-                    </div>
+        <div class="card">
+            <h2>🎯 스마트 발효 모드 선택</h2>
+            <div class="mode-grid">
+                <div class="mode-card" id="mode-standard" onclick="selectBrewingMode('standard', '표준 상온', 25, 3)">
+                    <div style="font-size: 1.8rem; margin-bottom: 8px;">🌾</div>
+                    <div style="font-size: 0.95rem; font-weight: bold; color: #222; margin-bottom: 4px;">표준 상온</div>
+                    <div style="font-size: 0.75rem; color: #777;">25°C | 일반 발효</div>
+                </div>
 
-                    <div class="mode-card" id="mode-dynamic" onclick="selectBrewingMode('dynamic', '다이내믹 변온', 22, 4)">
-                        <div style="font-size: 1.8rem; margin-bottom: 8px;">⚡</div>
-                        <div style="font-size: 0.95rem; font-weight: bold; color: #222; margin-bottom: 4px;">다이내믹 변온</div>
-                        <div style="font-size: 0.75rem; color: #777;">22°C | 가변 제어</div>
-                    </div>
+                <div class="mode-card" id="mode-dynamic" onclick="selectBrewingMode('dynamic', '다이내믹 변온', 22, 4)">
+                    <div style="font-size: 1.8rem; margin-bottom: 8px;">⚡</div>
+                    <div style="font-size: 0.95rem; font-weight: bold; color: #222; margin-bottom: 4px;">다이내믹 변온</div>
+                    <div style="font-size: 0.75rem; color: #777;">22°C | 가변 제어</div>
+                </div>
 
-                    <div class="mode-card" id="mode-premium" onclick="selectBrewingMode('premium', '프리미엄 저온', 15, 2)">
-                        <div style="font-size: 1.8rem; margin-bottom: 8px;">❄️</div>
-                        <div style="font-size: 0.95rem; font-weight: bold; color: #222; margin-bottom: 4px;">프리미엄 저온</div>
-                        <div style="font-size: 0.75rem; color: #777;">15°C | 고급 청주형</div>
-                    </div>
+                <div class="mode-card" id="mode-premium" onclick="selectBrewingMode('premium', '프리미엄 저온', 15, 2)">
+                    <div style="font-size: 1.8rem; margin-bottom: 8px;">❄️</div>
+                    <div style="font-size: 0.95rem; font-weight: bold; color: #222; margin-bottom: 4px;">프리미엄 저온</div>
+                    <div style="font-size: 0.75rem; color: #777;">15°C | 고급 청주형</div>
+                </div>
 
-                    <div class="mode-card" id="mode-carbon" onclick="selectBrewingMode('carbon', '고속 탄산', 28, 5)">
-                        <div style="font-size: 1.8rem; margin-bottom: 8px;">🫧</div>
-                        <div style="font-size: 0.95rem; font-weight: bold; color: #222; margin-bottom: 4px;">고속 탄산</div>
-                        <div style="font-size: 0.75rem; color: #777;">28°C | 스파클링</div>
-                    </div>
+                <div class="mode-card" id="mode-carbon" onclick="selectBrewingMode('carbon', '고속 탄산', 28, 5)">
+                    <div style="font-size: 1.8rem; margin-bottom: 8px;">🫧</div>
+                    <div style="font-size: 0.95rem; font-weight: bold; color: #222; margin-bottom: 4px;">고속 탄산</div>
+                    <div style="font-size: 0.75rem; color: #777;">28°C | 스파클링</div>
                 </div>
             </div>
+        </div>
 
-            <div class="card">
-                <h2>📈 실시간 온도 변화 추이 (30분 주기)</h2>
-                <p style="font-size:11px; color:#999; margin:-10px 0 10px 0;">💡 데이터가 많아지면 좌우로 밀어서(스크롤) 과거 내역을 볼 수 있습니다.</p>
-                
-                <div class="chart-scroll-wrapper" id="chartWrapper">
-                    <div class="chart-area-box" id="chartArea">
-                        <canvas id="tempTrendChart"></canvas>
-                    </div>
+        <div class="card">
+            <h2>📈 실시간 온도 변화 추이 (30분 주기)</h2>
+            <p style="font-size:11px; color:#999; margin:-10px 0 10px 0;">💡 데이터가 많아지면 좌우로 밀어서(스크롤) 과거 내역을 볼 수 있습니다.</p>
+            
+            <div class="chart-scroll-wrapper" id="chartWrapper">
+                <div class="chart-area-box" id="chartArea">
+                    <canvas id="tempTrendChart"></canvas>
                 </div>
             </div>
+        </div>
 
-            <div class="card">
-                <h2>⚙️ 제어 세부 설정</h2>
-                <div class="input-row">
-                    <div class="input-group">
-                        <label>희망 온도 (°C)</label>
-                        <input type="number" id="target_temp_input" value="25">
-                    </div>
-                    <div class="input-group">
-                        <label>하루 교반 횟수</label>
-                        <select id="stir_count_select">
-                            <option value="1">1회</option>
-                            <option value="2">2회</option>
-                            <option value="3" selected>3회</option>
-                            <option value="4">4회</option>
-                            <option value="5">5회</option>
-                        </select>
-                    </div>
+        <div class="card">
+            <h2>⚙️ 제어 세부 설정</h2>
+            <div class="input-row">
+                <div class="input-group">
+                    <label>희망 온도 (°C)</label>
+                    <input type="number" id="target_temp_input" value="25">
                 </div>
-                <div class="btn-group">
-                    <button class="btn-primary" onclick="updateSettings()">설정 적용하기</button>
-                    <button class="btn-secondary" onclick="forceStirNow()">▷ 즉시 교반하기</button>
+                <div class="input-group">
+                    <label>하루 교반 횟수</label>
+                    <select id="stir_count_select">
+                        <option value="1">1회</option>
+                        <option value="2">2회</option>
+                        <option value="3" selected>3회</option>
+                        <option value="4">4회</option>
+                        <option value="5">5회</option>
+                    </select>
                 </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn-primary" onclick="updateSettings()">설정 적용하기</button>
+                <button class="btn-secondary" onclick="forceStirNow()">▷ 즉시 교반하기</button>
             </div>
         </div>
         
@@ -307,9 +270,8 @@
     <script>
         let selectedMode = 'custom'; 
         let tempChart; 
-        let currentDeviceId = ''; // 🆕 주소창 파라미터에서 추출한 기기 ID 보관 변수
 
-        // 🚨 본인의 진짜 firebaseConfig 정보 고정 유지
+        // 🚨여기에 지민 님의 진짜 firebaseConfig 값을 복사 붙여넣기 하세요!🚨
         const firebaseConfig = {
             apiKey: "본인의_API_KEY",
             authDomain: "smart11-f49d9.firebaseapp.com",
@@ -326,9 +288,13 @@
         // -----------------------------------------------------------------
         // 📊 [스크롤 연동형] Chart.js 그래프 엔진 초기화 및 24시간 더미 플로팅
         // -----------------------------------------------------------------
+        // -----------------------------------------------------------------
+        // 📊 [변경 위치 1] Chart.js 그래프 엔진 초기화 (최대 24시간 고정 창 서식)
+        // -----------------------------------------------------------------
         function initTemperatureChart() {
             const ctx = document.getElementById('tempTrendChart').getContext('2d');
             
+            // 처음 켰을 때는 빈 배열로 시작합니다.
             const sampleLabels = [];
             const sampleData = [];
 
@@ -368,103 +334,86 @@
                 }
             });
 
+            // 스크롤 영역 가로 크기를 현재 화면의 'Custom 폭'에 맞추어 딱 24시간 분량 크기로 고정합니다.
+            // 48개 플롯 * 45px = 약 2160px 너비로 도화지 크기 고정
             document.getElementById('chartArea').style.width = '2160px';
             tempChart.resize();
         }
-
         function updateChartCanvasWidth() {
             const dataCount = tempChart.data.labels.length;
             const chartArea = document.getElementById('chartArea');
             const wrapper = document.getElementById('chartWrapper');
 
+            // 점 1개당 가로 폭 간격을 45픽셀로 고정 매칭합니다.
             const calculatedWidth = dataCount * 45;
             
+            // 만약 전체 너비가 대시보드 기본폭(약 550px)보다 크다면, 가로 길이를 팍팍 확장시킵니다!
             if (calculatedWidth > wrapper.clientWidth) {
                 chartArea.style.width = `${calculatedWidth}px`;
             } else {
                 chartArea.style.width = '100%';
             }
             
+            // 차트 크기 재조정 후 자동으로 스크롤을 가장 오른쪽(최신 데이터 위치)으로 밀어내기
             tempChart.resize();
             setTimeout(() => {
                 wrapper.scrollLeft = wrapper.scrollWidth;
             }, 100);
         }
 
-        // -----------------------------------------------------------------
-        // 🔑 🆕 [핵심 신규 추가] URL 주소 분석을 통한 로그인 및 기기 라우팅 매커니즘
-        // -----------------------------------------------------------------
-        const urlParams = new URLSearchParams(window.location.search);
-        const deviceNum = urlParams.get('device'); // ?device=0001 에서 '0001' 추출
-
-        if (!deviceNum) {
-            // ❌ QR코드를 안 찍고 그냥 일반 주소로 들어온 상황 ➡️ 로그인 대기 화면 오픈
-            document.getElementById('loginPage').style.display = 'block';
-            document.getElementById('appLayout').style.display = 'none';
-        } else {
-            //  QR스캔 성공! ➡️ 로그인 안내 숨기고 메인 조작계 활성화
-            document.getElementById('loginPage').style.display = 'none';
-            document.getElementById('appLayout').style.display = 'block';
-            
-            // 상단 제목 표시줄 호기수 변경 연출
-            document.getElementById('deviceHeaderId').innerText = `#${deviceNum}호기`;
-            
-            // 파이어베이스 DB 접근 경로를 해당 기기 번호 노드로 자동 동적 바인딩 스왑!!
-            currentDeviceId = 'MAKGELLI_DEV_' + deviceNum; // 'MAKGELLI_DEV_0001' 생성
-
-            // 차트 가동
-            initTemperatureChart();
-            // 계측 데이터 모니터링 가동
-            startRealtimeMonitoring();
-        }
+        // 구동 시작
+        initTemperatureChart();
 
         // -----------------------------------------------------------------
-        // 1. 라즈베리파이가 쏘아 올리는 계측값 실시간 수신 구역 (동적 경로 스왑 적용)
+        // 1. 라즈베리파이가 쏘아 올리는 계측값 실시간 수신 구역
         // -----------------------------------------------------------------
-        function startRealtimeMonitoring() {
-            let lastLoggedMinute = -1; 
+        let lastLoggedMinute = -1; 
 
-            // 🚨 기존 'brewery_device_01' 대신 독립된 'devices/MAKGELLI_DEV_0001/monitoring' 경로 매핑
-            const monitoringRef = db.ref(`devices/${currentDeviceId}/monitoring`);
-            monitoringRef.on('value', (snapshot) => {
-                const data = snapshot.val();
-                if(data) {
-                    const currentTemp = data.temperature !== undefined ? data.temperature : '--';
-                    document.getElementById('curr_temp').innerText = currentTemp;
-                    document.getElementById('curr_abv').innerText = data.abv !== undefined ? data.abv : '--';
-                    document.getElementById('uptime').innerText = data.elapsed_time || '--:--:--';
+        const monitoringRef = db.ref('brewery_device_01/monitoring');
+        monitoringRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            if(data) {
+                const currentTemp = data.temperature !== undefined ? data.temperature : '--';
+                document.getElementById('curr_temp').innerText = currentTemp;
+                document.getElementById('curr_abv').innerText = data.abv !== undefined ? data.abv : '--';
+                document.getElementById('uptime').innerText = data.elapsed_time || '--:--:--';
 
-                    if (data.elapsed_time && currentTemp !== '--') {
-                        const timeParts = data.elapsed_time.split(':');
-                        if (timeParts.length === 3) {
-                            const hours = timeParts[0];
-                            const minutes = parseInt(timeParts[1], 10);
+                // [30분 주기 파이어베이스 리얼타임 데이터 캐칭 레이더]
+                if (data.elapsed_time && currentTemp !== '--') {
+                    const timeParts = data.elapsed_time.split(':');
+                    if (timeParts.length === 3) {
+                        const hours = timeParts[0];
+                        const minutes = parseInt(timeParts[1], 10);
 
-                            if ((minutes === 0 || minutes === 30) && minutes !== lastLoggedMinute) {
-                                lastLoggedMinute = minutes; 
+                        // 분 단위가 정확히 00분 또는 30분인 타이밍을 낚아챕니다.
+                        if ((minutes === 0 || minutes === 30) && minutes !== lastLoggedMinute) {
+                            lastLoggedMinute = minutes; // 중복 추가 방지
 
-                                const labelTime = `${hours}:${minutes === 0 ? '00' : '30'}`;
-                                
-                                tempChart.data.labels.push(labelTime);
-                                tempChart.data.datasets[0].data.push(Number(currentTemp));
+                            const labelTime = `${hours}:${minutes === 0 ? '00' : '30'}`;
+                            
+                            // 1. 차트 끝에 최신 데이터 밀어 넣기
+                            tempChart.data.labels.push(labelTime);
+                            tempChart.data.datasets[0].data.push(Number(currentTemp));
 
-                                if (tempChart.data.labels.length > 48) {
-                                    tempChart.data.labels.shift(); 
-                                    tempChart.data.datasets[0].data.shift(); 
-                                }
-                                
-                                tempChart.update(); 
-
-                                const wrapper = document.getElementById('chartWrapper');
-                                wrapper.scrollLeft = wrapper.scrollWidth;
-
-                                console.log(`📈 [슬라이딩 24h] 기기: ${currentDeviceId} | 시간: ${labelTime} | 온도: ${currentTemp}°C`);
+                            // 🚨 [핵심 변경] 데이터가 24시간 분량(30분 단위이므로 48개 윈도우)을 넘어가면
+                            // 맨 왼쪽(가장 오래된 데이터)을 1개씩 지워버려서 최대 24시간 폭을 항상 유지합니다.
+                            if (tempChart.data.labels.length > 48) {
+                                tempChart.data.labels.shift();       // 가장 오래된 시간축 축 제거
+                                tempChart.data.datasets[0].data.shift(); // 가장 오래된 온도 데이터 제거
                             }
+                            
+                            tempChart.update(); // 그래프 최신 갱신
+
+                            // 항상 가장 최근 데이터가 있는 맨 오른쪽으로 화면 스크롤 자동 정렬
+                            const wrapper = document.getElementById('chartWrapper');
+                            wrapper.scrollLeft = wrapper.scrollWidth;
+
+                            console.log(`📈 [슬라이딩 24h 윈도우] 시간: ${labelTime} | 온도: ${currentTemp}°C`);
                         }
                     }
                 }
-            });
-        }
+            }
+        });
 
         /**
          * 2. 🎯 유저가 특정 발효 모드 카드를 탭했을 때 작동하는 연동 함수
@@ -507,14 +456,13 @@
         }
 
         /**
-         * 4. 🚀 [설정 적용하기] 버튼 누르면 파이어베이스 제어 노드에 최종 업로드하는 함수 (동적 경로 스왑)
+         * 4. 🚀 [설정 적용하기] 버튼 누르면 파이어베이스 제어 노드에 최종 업로드하는 함수
          */
         function updateSettings() {
             const targetTemp = document.getElementById('target_temp_input').value;
             const stirCount = document.getElementById('stir_count_select').value;
 
-            // 🚨 독립된 'devices/MAKGELLI_DEV_0001/control' 노드에 제어 명령 set
-            db.ref(`devices/${currentDeviceId}/control`).set({
+            db.ref('brewery_device_01/control').set({
                 target_temperature: Number(targetTemp),
                 stir_frequency: Number(stirCount),
                 current_mode: selectedMode  
@@ -525,14 +473,13 @@
                 alert("네트워크 장애로 전송에 실패했습니다.");
             });
         }
-
         /**
-         * 5. 🌀 [즉시 교반하기] 강제 섞기 명령 전송 (동적 경로 스왑)
+         * 5. 🌀 [즉시 교반하기] 강제 섞기 명령 전송
          */
         function forceStirNow() {
-            // 🚨 독립된 'devices/MAKGELLI_DEV_0001/control' 노드에 즉시 트리거 전송
-            db.ref(`devices/${currentDeviceId}/control`).update({
-                force_stir_trigger: Date.now() 
+            // 파이어베이스 'control' 노드에 force_stir 트리거를 현재 시간으로 업데이트
+            db.ref('brewery_device_01/control').update({
+                force_stir_trigger: Date.now() // 시간이 바뀔 때마다 파이썬이 감지함
             }).then(() => {
                 showToastPopup('🌀', '기기에 즉시 교반 명령을 내렸습니다!');
             }).catch((error) => {
