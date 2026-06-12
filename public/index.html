@@ -61,7 +61,10 @@
         .btn-secondary {
             flex: 1; background: white; color: #333; border: 1px solid #ddd; padding: 14px; border-radius: 8px; font-weight: bold; cursor: pointer;
         }
-
+        .btn-danger { 
+            flex: 1; background: #ef4444; color: white; border: none; padding: 14px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: background 0.2s;
+        }
+        .btn-danger:hover { background: #dc2626; }
         .mode-grid {
             display: grid; 
             grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); 
@@ -207,7 +210,9 @@
             </div>
             <div class="btn-group">
                 <button class="btn-primary" onclick="updateSettings()">설정 적용하기</button>
-                <button class="btn-secondary" onclick="forceStirNow()">▷ 즉시 교반하기</button>
+                <button class="btn-secondary" onclick="forceStirNow()">즉시 교반하기</button>
+                <button class="btn-danger" onclick="stopSystem()">작동 중지</button>
+                <button class="btn-secondary" style="color: #d32f2f;" onclick="resetHistory()">데이터초기화</button>
             </div>
         </div>
         
@@ -277,51 +282,61 @@
 
         initTemperatureChart();
 
-        // 1. 파이어베이스 데이터 수신 및 1분 단위 그래프 그리기
-        let lastLoggedMinute = -1; 
+        // =================================================================
+        // 1. [모니터링 트랙] 텍스트 정보 (온도, 도수 등) 실시간 수신 (그래프 코드 제거됨)
+        // =================================================================
         const monitoringRef = db.ref('brewery_device_01/monitoring');
-        
         monitoringRef.on('value', (snapshot) => {
             const data = snapshot.val();
-            
             if(data) {
-                const currentTemp = data.temperature !== undefined ? data.temperature : '--';
-                document.getElementById('curr_temp').innerText = currentTemp;
+                document.getElementById('curr_temp').innerText = data.temperature !== undefined ? data.temperature : '--';
                 document.getElementById('curr_abv').innerText = data.abv !== undefined ? data.abv : '--';
                 document.getElementById('uptime').innerText = data.elapsed_time || '--:--:--';
-
-                // 1분 주기 그래프 캐칭 레이더
-                if (data.elapsed_time && currentTemp !== '--') {
-                    const timeParts = data.elapsed_time.split(':');
-                    if (timeParts.length === 3) {
-                        const hours = timeParts[0];
-                        const minutes = parseInt(timeParts[1], 10);
-
-                        // 분 단위가 바뀔 때마다 차트에 추가
-                        if (minutes !== lastLoggedMinute) {
-                            lastLoggedMinute = minutes; 
-
-                            const minStr = minutes < 10 ? '0' + minutes : minutes;
-                            const labelTime = `${hours}:${minStr}`;
-                            
-                            tempChart.data.labels.push(labelTime);
-                            tempChart.data.datasets[0].data.push(Number(currentTemp));
-
-                            // 30분(30개) 데이터만 유지하고 슬라이딩
-                            if (tempChart.data.labels.length > 30) {
-                                tempChart.data.labels.shift();       
-                                tempChart.data.datasets[0].data.shift(); 
-                            }
-                            
-                            tempChart.update(); 
-
-                            const wrapper = document.getElementById('chartWrapper');
-                            wrapper.scrollLeft = wrapper.scrollWidth;
-                        }
-                    }
+                if(data.last_stir_time) {
+                    document.getElementById('last_stir').innerText = data.last_stir_time;
                 }
             }
         });
+
+        // =================================================================
+        // 2. 📚 [히스토리 트랙] 과거 그래프 기록 한 번에 불러오기 & 실시간 추가
+        // =================================================================
+        const historyRef = db.ref('brewery_device_01/history');
+        
+        // limitToLast(30)을 통해 최근 30분치 데이터를 로딩하자마자 그래프에 쫙 뿌려줍니다.
+        // 이후 1분마다 파이썬이 데이터를 밀어넣으면 자동으로 이 코드가 한 번 더 실행됩니다! (마법의 코드)
+        historyRef.limitToLast(30).on('child_added', (snapshot) => {
+            const data = snapshot.val();
+            if(data && data.time && data.temp) {
+                tempChart.data.labels.push(data.time);
+                tempChart.data.datasets[0].data.push(Number(data.temp));
+
+                if (tempChart.data.labels.length > 30) {
+                    tempChart.data.labels.shift();       
+                    tempChart.data.datasets[0].data.shift(); 
+                }
+                
+                tempChart.update(); 
+                
+                const wrapper = document.getElementById('chartWrapper');
+                wrapper.scrollLeft = wrapper.scrollWidth; // 오른쪽으로 자동 스크롤
+            }
+        });
+
+        // =================================================================
+        // 3. 🗑️ [기록 초기화] 새로운 막걸리를 담글 때 과거 기록 싹 지우기
+        // =================================================================
+        function resetHistory() {
+            if(confirm("기존 그래프 기록을 모두 지우고 완전히 새로 시작하시겠습니까?")) {
+                db.ref('brewery_device_01/history').remove().then(() => {
+                    // 화면상의 차트 데이터 강제 초기화
+                    tempChart.data.labels = [];
+                    tempChart.data.datasets[0].data = [];
+                    tempChart.update();
+                    showToastPopup('과거 발효 기록이 모두 초기화되었습니다.');
+                });
+            }
+        }
 
         // 2. 발효 모드 클릭 연동
         function selectBrewingMode(modeId, modeTitle, temp, stir) {
@@ -382,6 +397,22 @@
                 console.error("전송 에러 발생:", error);
             });
         }
+
+        // 6. 시스템 작동 중지
+        function stopSystem() {
+            // 실수로 누르는 것을 방지하기 위해 경고창 띄우기
+            if(confirm("정말 발효를 중지하고 기기를 대기 상태로 만들까요?")) {
+                db.ref('brewery_device_01/control').update({
+                    system_command: 'STOP',
+                    command_trigger: Date.now()
+                }).then(() => {
+                    showToastPopup('🛑', '시스템 가동을 전면 중지합니다.');
+                }).catch((error) => {
+                    console.error("전송 에러 발생:", error);
+                });
+            }
+        }
+
     </script>
 </body>
 </html>
