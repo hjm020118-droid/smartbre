@@ -179,7 +179,7 @@
 
         <div class="card">
             <h2>📈 실시간 온도 변화 추이 (1분 주기)</h2>
-            <p style="font-size:11px; color:#999; margin:-10px 0 10px 0;">💡 데이터가 많아지면 좌우로 밀어서(스크롤) 과거 내역을 볼 수 있습니다.</p>
+            <p style="font-size:11px; color:#999; margin:-10px 0 10px 0;">💡 데이터가 많아지면 좌우로 밀어서 과거 내역을 볼 수 있습니다.</p>
             <div class="chart-scroll-wrapper" id="chartWrapper">
                 <div class="chart-area-box" id="chartArea">
                     <canvas id="tempTrendChart"></canvas>
@@ -225,7 +225,7 @@
         let selectedMode = 'custom'; 
         let tempChart; 
 
-        // 🚨 지민님의 진짜 Firebase 설정값 장착 완료!
+        //Firebase 설정값
         const firebaseConfig = {
             apiKey: "AIzaSyAP3rIuuAp_685KbZUupy1gB4eynqnTbjk",
             authDomain: "smart11-f49d9.firebaseapp.com",
@@ -265,3 +265,123 @@
                     plugins: { legend: { display: false } },
                     scales: {
                         y: { min: 10, max: 35, grid: { color: '#f1f5f9' }, ticks: { font: { size: 10 } } },
+                        x: { grid: { display: false }, ticks: { font: { size: 10 }, color: '#777' } }
+                    }
+                }
+            });
+
+            // 스크롤 넓이 강제 지정 (30분 분량에 맞게 약 1350px)
+            document.getElementById('chartArea').style.width = '1350px';
+            tempChart.resize();
+        }
+
+        initTemperatureChart();
+
+        // 1. 파이어베이스 데이터 수신 및 1분 단위 그래프 그리기
+        let lastLoggedMinute = -1; 
+        const monitoringRef = db.ref('brewery_device_01/monitoring');
+        
+        monitoringRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            
+            if(data) {
+                const currentTemp = data.temperature !== undefined ? data.temperature : '--';
+                document.getElementById('curr_temp').innerText = currentTemp;
+                document.getElementById('curr_abv').innerText = data.abv !== undefined ? data.abv : '--';
+                document.getElementById('uptime').innerText = data.elapsed_time || '--:--:--';
+
+                // 1분 주기 그래프 캐칭 레이더
+                if (data.elapsed_time && currentTemp !== '--') {
+                    const timeParts = data.elapsed_time.split(':');
+                    if (timeParts.length === 3) {
+                        const hours = timeParts[0];
+                        const minutes = parseInt(timeParts[1], 10);
+
+                        // 분 단위가 바뀔 때마다 차트에 추가
+                        if (minutes !== lastLoggedMinute) {
+                            lastLoggedMinute = minutes; 
+
+                            const minStr = minutes < 10 ? '0' + minutes : minutes;
+                            const labelTime = `${hours}:${minStr}`;
+                            
+                            tempChart.data.labels.push(labelTime);
+                            tempChart.data.datasets[0].data.push(Number(currentTemp));
+
+                            // 30분(30개) 데이터만 유지하고 슬라이딩
+                            if (tempChart.data.labels.length > 30) {
+                                tempChart.data.labels.shift();       
+                                tempChart.data.datasets[0].data.shift(); 
+                            }
+                            
+                            tempChart.update(); 
+
+                            const wrapper = document.getElementById('chartWrapper');
+                            wrapper.scrollLeft = wrapper.scrollWidth;
+                        }
+                    }
+                }
+            }
+        });
+
+        // 2. 발효 모드 클릭 연동
+        function selectBrewingMode(modeId, modeTitle, temp, stir) {
+            selectedMode = modeId;
+            const cards = document.querySelectorAll('.mode-card');
+            cards.forEach(card => card.classList.remove('active'));
+
+            const targetCard = document.getElementById(`mode-${modeId}`);
+            if(targetCard) targetCard.classList.add('active');
+
+            document.getElementById('target_temp_input').value = temp;
+            document.getElementById('stir_count_select').value = stir;
+
+            let emoji = '🌾';
+            if(modeId === 'dynamic') emoji = '⚡';
+            else if(modeId === 'premium') emoji = '❄️';
+            else if(modeId === 'carbon') emoji = '🫧';
+
+            showToastPopup(emoji, `[${modeTitle} 모드] 수치가 입력되었습니다.`);
+        }
+
+        // 3. 팝업 알림
+        function showToastPopup(emoji, message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-icon').innerText = emoji;
+            document.getElementById('toast-text').innerText = message;
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 2300);
+        }
+
+        // 4. 설정 적용
+        function updateSettings() {
+            const targetTemp = document.getElementById('target_temp_input').value;
+            const stirCount = document.getElementById('stir_count_select').value;
+
+            db.ref('brewery_device_01/control').set({
+                target_temperature: Number(targetTemp),
+                stir_frequency: Number(stirCount),
+                current_mode: selectedMode  
+            }).then(() => {
+                showToastPopup('🚀', '기기에 설정값이 무사히 전송되었습니다!');
+            }).catch((error) => {
+                console.error("전송 에러 발생:", error);
+                alert("네트워크 장애로 전송에 실패했습니다.");
+            });
+        }
+
+        // 5. 즉시 교반
+        function forceStirNow() {
+            db.ref('brewery_device_01/control').update({
+                force_stir_trigger: Date.now() 
+            }).then(() => {
+                showToastPopup('🌀', '기기에 즉시 교반 명령을 내렸습니다!');
+                const stirElement = document.getElementById('last_stir');
+                stirElement.innerText = '방금 전';
+                stirElement.style.color = '#2196f3';
+            }).catch((error) => {
+                console.error("전송 에러 발생:", error);
+            });
+        }
+    </script>
+</body>
+</html>
